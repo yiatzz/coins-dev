@@ -1,0 +1,9 @@
+name: Coins
+version: 1.0-SNAPSHOT
+main: br.com.yiatzz.coins.spigot.CoinsSpigotPlugin
+author: yiatzz
+softdepend: [Vault]
+
+commands:
+  coins:
+    aliases: [money, balance]
