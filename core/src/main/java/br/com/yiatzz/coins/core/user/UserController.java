@@ -10,6 +10,8 @@ public interface UserController {
 
     void getUser(String name, Consumer<User> userConsumer);
 
+    User getUser(String name);
+
     double getUserCoins(String name);
 
     void createUser(UUID uuid, String name, double coins, Consumer<Boolean> consumer);

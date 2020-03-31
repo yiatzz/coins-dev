@@ -14,7 +14,7 @@ public interface CoinsSpigotApplication {
 
     void handleUserInfoPerfomed(Player player);
 
-    void handleUserViewingInfoPerfomed(Player player, Player target);
+    void handleUserViewingInfoPerfomed(Player player, String target);
 
     void handleUserDepositPerfomed(Player player, double newValue);
 
@@ -29,10 +29,6 @@ public interface CoinsSpigotApplication {
     double getUserCoins(Player player);
 
     double getUserCoins(String player);
-    /*
-
-     */
-
 
     /*
 

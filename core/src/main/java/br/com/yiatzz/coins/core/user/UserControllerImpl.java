@@ -63,6 +63,34 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
+    public User getUser(String name) {
+        CompletableFuture<User> future = new CompletableFuture<>();
+
+        executorService.submit(() -> {
+            try (Connection connection = dataSource.getConnection()) {
+                PreparedStatement preparedStatement = connection.prepareStatement(QUERY_GET_USER_BY_NAME);
+                preparedStatement.setString(1, name);
+
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                if (!resultSet.next()) {
+                    future.complete(null);
+                    resultSet.close();
+                    return;
+                }
+
+                User user = new SimpleUser(UUID.fromString(resultSet.getString("uniqueId")), name, resultSet.getDouble("coins"));
+                resultSet.close();
+                future.complete(user);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return future.join();
+    }
+
+    @Override
     public double getUserCoins(String name) {
         CompletableFuture<Double> future = new CompletableFuture<>();
 

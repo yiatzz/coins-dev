@@ -9,12 +9,14 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 import java.text.NumberFormat;
 
@@ -99,8 +101,8 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
     }
 
     @Override
-    public void handleUserViewingInfoPerfomed(Player player, Player target) {
-        userController.getUser(target.getUniqueId(), user -> {
+    public void handleUserViewingInfoPerfomed(Player player, String target) {
+        userController.getUser(target, user -> {
             if (user == null) {
                 player.sendMessage("§cUsuário inválido.");
             } else {
@@ -111,26 +113,35 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public void handleUserDepositPerfomed(Player player, double newValue) {
-        userController.updateUserCoins(player.getUniqueId(), newValue, aBoolean -> {
-            if (!aBoolean) {
-                player.sendMessage("§cAlgo de errado aconteceu.");
-                return;
-            }
+        userController.getUser(player.getUniqueId(), user -> {
+            double newValue1 = user.getCoins() + newValue;
 
-            player.sendMessage("§eForam adicionados §f" + numberFormat.format(newValue) + " §ecoins á você.");
+            userController.updateUserCoins(player.getUniqueId(), newValue1, aBoolean -> {
+                if (!aBoolean) {
+                    player.sendMessage("§cAlgo de errado aconteceu.");
+                    return;
+                }
+
+                player.sendMessage("§eAgora você tem §f" + numberFormat.format(newValue1) + "§e coins.");
+            });
         });
     }
 
     @Override
     public void handleUserCoinsWithdrawPerfomed(Player player, double newValue) {
-        userController.getUser(player.getUniqueId(), user -> userController.updateUserCoins(player.getUniqueId(), user.getCoins() - newValue, aBoolean -> {
-            if (!aBoolean) {
-                player.sendMessage("§cAlgo de errado aconteceu.");
-                return;
+        userController.getUser(player.getUniqueId(), user -> {
+            double coins = user.getCoins() - newValue;
+
+            if (coins <= 0.0) {
+                coins = 0.0;
             }
 
-            player.sendMessage("§cForam removidos §f" + numberFormat.format(newValue) + " §ccoins de você.");
-        }));
+            userController.updateUserCoins(player.getUniqueId(), coins, aBoolean -> {
+                if (!aBoolean) {
+                    player.sendMessage("§cAlgo de errado aconteceu.");
+                }
+            });
+        });
     }
 
     @Override
@@ -146,7 +157,13 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
                 return;
             }
 
-            userController.updateUserCoins(player.getUniqueId(), user.getCoins() - value, aBoolean -> {
+            double coins = user.getCoins() - value;
+
+            if (coins <= 0.0) {
+                coins = 0.0;
+            }
+
+            userController.updateUserCoins(player.getUniqueId(), coins, aBoolean -> {
                 if (!aBoolean) {
                     player.sendMessage("§cAlgo de errado aconteceu.");
                     return;
@@ -194,6 +211,7 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
             for (User user : users) {
                 String prefix = i == 0 ? "§2[Magnata] " : "";
+                prefix += ChatColor.translateAlternateColorCodes('&', PermissionsEx.getPermissionManager().getUser(user.getUUID()).getPrefix());
 
                 player.sendMessage("§f  " + (i + 1) + "º " + prefix + user.getName() + ": §7" + NumberFormat.getInstance().format(user.getCoins()) + " coins.");
                 i++;
@@ -221,11 +239,13 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public double getUserCoins(Player player) {
-        return userController.getUserCoins(player.getName());
+        User user = userController.getUser(player.getName());
+        return user == null ? 0.0 : user.getCoins();
     }
 
     @Override
     public double getUserCoins(String player) {
-        return userController.getUserCoins(player);
+        User user = userController.getUser(player);
+        return user == null ? 0.0 : user.getCoins();
     }
 }

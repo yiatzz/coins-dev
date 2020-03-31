@@ -47,13 +47,7 @@ public class CommandCoins implements CommandExecutor {
                     break;
                 }
 
-                Player target = Bukkit.getPlayer(args[0]);
-                if (target == null) {
-                    player.sendMessage("§cUsuário inválido.");
-                    break;
-                }
-
-                provider.get().handleUserViewingInfoPerfomed(player, target);
+                provider.get().handleUserViewingInfoPerfomed(player, args[0]);
                 break;
             case 3:
                 Player otherPlayer = Bukkit.getPlayer(args[1]);

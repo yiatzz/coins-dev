@@ -112,7 +112,7 @@ public class WrappedEconomy implements Economy {
 
     @Override
     public boolean has(String playerName, String worldName, double amount) {
-        return false;
+        return getBalance(Bukkit.getPlayer(playerName)) >= amount;
     }
 
     @Override
@@ -122,10 +122,9 @@ public class WrappedEconomy implements Economy {
 
     @Override
     public EconomyResponse withdrawPlayer(String playerName, double amount) {
-        double value = getBalance(playerName);
 
-        provider.get().handleUserCoinsWithdrawPerfomed(Bukkit.getPlayer(playerName), value - amount);
-        return new EconomyResponse(amount, value, EconomyResponse.ResponseType.SUCCESS, null);
+        provider.get().handleUserCoinsWithdrawPerfomed(Bukkit.getPlayer(playerName), amount);
+        return new EconomyResponse(amount, getBalance(playerName), EconomyResponse.ResponseType.SUCCESS, null);
     }
 
     @Override
@@ -135,20 +134,19 @@ public class WrappedEconomy implements Economy {
 
     @Override
     public EconomyResponse withdrawPlayer(String playerName, String currencyName, double amount) {
-        return null;
+        return this.withdrawPlayer(playerName, amount);
     }
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, String worldName, double amount) {
-        return null;
+        return this.withdrawPlayer(player.getName(), amount);
     }
 
     @Override
     public EconomyResponse depositPlayer(String playerName, double amount) {
-        double value = getBalance(playerName);
 
-        provider.get().handleUserDepositPerfomed(Bukkit.getPlayer(playerName), value + amount);
-        return new EconomyResponse(amount, value, EconomyResponse.ResponseType.SUCCESS, null);
+        provider.get().handleUserDepositPerfomed(Bukkit.getPlayer(playerName), amount);
+        return new EconomyResponse(amount, getBalance(playerName), EconomyResponse.ResponseType.SUCCESS, null);
     }
 
     @Override
@@ -158,12 +156,12 @@ public class WrappedEconomy implements Economy {
 
     @Override
     public EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
-        return null;
+        return depositPlayer(playerName, amount);
     }
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, String worldName, double amount) {
-        return null;
+        return depositPlayer(player.getName(), amount);
     }
 
     @Override
