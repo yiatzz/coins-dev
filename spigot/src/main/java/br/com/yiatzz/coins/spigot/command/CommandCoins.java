@@ -34,7 +34,7 @@ public class CommandCoins implements CommandExecutor {
                 provider.get().handleUserInfoPerfomed(player);
                 break;
             case 1:
-                if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove") || args[0].equalsIgnoreCase("set")) {
+                if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove") || args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("set")) {
                     if (!player.hasPermission("coins.admin")) {
                         player.sendMessage("§cVocê não tem permissão para executar este comando.");
                         break;
@@ -68,6 +68,7 @@ public class CommandCoins implements CommandExecutor {
                 boolean hasPermission = player.hasPermission("coins.admin");
 
                 switch (args[0].toLowerCase()) {
+                    case "give":
                     case "add":
                     case "adicionar":
                         if (!hasPermission) {

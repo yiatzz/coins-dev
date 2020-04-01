@@ -2,6 +2,7 @@ name: Coins
 version: 1.0-SNAPSHOT
 main: br.com.yiatzz.coins.spigot.CoinsSpigotPlugin
 author: yiatzz
+load: STARTUP
 depend: [Vault]
 
 commands:

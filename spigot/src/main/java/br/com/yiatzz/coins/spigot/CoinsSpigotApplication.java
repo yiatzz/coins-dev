@@ -1,5 +1,6 @@
 package br.com.yiatzz.coins.spigot;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public interface CoinsSpigotApplication {
@@ -17,6 +18,8 @@ public interface CoinsSpigotApplication {
     void handleUserViewingInfoPerfomed(Player player, String target);
 
     void handleUserDepositPerfomed(Player player, double newValue);
+
+    void handleOfflineUserDepositPerfomed(OfflinePlayer offlinePlayer, double newValue);
 
     void handleUserCoinsWithdrawPerfomed(Player player, double newValue);
 
@@ -36,4 +39,5 @@ public interface CoinsSpigotApplication {
 
     void handleUserLoadInfos(Player player);
 
+    void handleUserUnload(Player player);
 }

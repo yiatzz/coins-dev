@@ -8,7 +8,7 @@ public class SimpleUser implements User {
     private final String name;
     private double balance;
 
-    SimpleUser(UUID uniqueId, String name, double balance) {
+    public SimpleUser(UUID uniqueId, String name, double balance) {
         this.uniqueId = uniqueId;
         this.name = name;
         this.balance = balance;

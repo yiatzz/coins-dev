@@ -144,8 +144,11 @@ public class WrappedEconomy implements Economy {
 
     @Override
     public EconomyResponse depositPlayer(String playerName, double amount) {
-
-        provider.get().handleUserDepositPerfomed(Bukkit.getPlayer(playerName), amount);
+        if (Bukkit.getPlayer(playerName) == null) {
+            provider.get().handleOfflineUserDepositPerfomed(Bukkit.getOfflinePlayer(playerName), amount);
+        } else {
+            provider.get().handleUserDepositPerfomed(Bukkit.getPlayer(playerName), amount);
+        }
         return new EconomyResponse(amount, getBalance(playerName), EconomyResponse.ResponseType.SUCCESS, null);
     }
 
