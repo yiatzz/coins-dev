@@ -21,4 +21,8 @@ public class CoinsSpigotPlugin extends JavaPlugin {
         coinsSpigotApplication = injector.getInstance(CoinsSpigotApplication.class);
         coinsSpigotApplication.initialize();
     }
+
+    public CoinsSpigotApplication getCoinsSpigotApplication() {
+        return coinsSpigotApplication;
+    }
 }

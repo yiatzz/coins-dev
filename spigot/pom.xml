@@ -38,14 +38,6 @@
         </dependency>
 
         <dependency>
-            <groupId>br.com.devpaulo.legendchat</groupId>
-            <artifactId>LegendChat</artifactId>
-            <version>1.4</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/maven/LegendChat.jar</systemPath>
-        </dependency>
-
-        <dependency>
             <groupId>ru.tekhnode</groupId>
             <artifactId>PermissionsEx</artifactId>
             <version>1.2.4</version>
