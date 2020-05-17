@@ -50,11 +50,11 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public void initialize() {
+        hookVault();
+
         if (converterBoolean) {
             convert();
         }
-
-        hookVault();
 
         plugin.getCommand("coins").setExecutor(commandCoins);
         plugin.getServer().getPluginManager().registerEvents(userListener, plugin);
@@ -68,10 +68,8 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public void hookVault() {
-        if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
-            plugin.getServer().getServicesManager().register(Economy.class, wrappedEconomy, plugin, ServicePriority.Highest);
-            plugin.getLogger().info("Vault hookado.");
-        }
+        plugin.getServer().getServicesManager().register(Economy.class, wrappedEconomy, plugin, ServicePriority.Highest);
+        plugin.getLogger().info("Vault hookado.");
     }
 
     @Override
@@ -181,6 +179,11 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public void handleUserPaymentPerfomed(Player player, Player target, double value) {
+        if (value <= 0.0 || value <= 0) {
+            player.sendMessage("§cValor inválido.");
+            return;
+        }
+
         if (player.getName().equals(target.getName())) {
             player.sendMessage("§cVocê não enviar coins á si mesmo.");
             return;
@@ -277,6 +280,10 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
     @Override
     public void handleUserLoadInfos(Player player) {
         userController.getUser(player.getUniqueId(), user -> {
+            if (player.hasMetadata("NPC")) {
+                return;
+            }
+
             if (user == null) {
                 userController.createUser(player.getUniqueId(), player.getName(), 0.0, aBoolean -> {
                     if (!aBoolean) {
@@ -289,7 +296,7 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
                     player.sendMessage("§eEba! Agora você está em nosso banco de dados.");
                 });
             } else {
-                coinsCache.addElement(new SimpleUser(player.getUniqueId(), player.getName(), user.getCoins()));
+                coinsCache.addElement(user);
             }
         });
     }
@@ -302,9 +309,7 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
             return;
         }
 
-        if (coinsCache.contains(byUniqueId.get())) {
-            coinsCache.removeElement(byUniqueId.get());
-        }
+        coinsCache.removeElement(byUniqueId.get());
     }
 
     @Override
@@ -315,12 +320,17 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
             return 0.0;
         }
 
-        return byUniqueId.get().getCoins();
+        return byUniqueId.map(User::getCoins).orElse(0.0);
     }
 
     @Override
     public double getUserCoins(String player) {
         Optional<User> byUniqueId = coinsCache.getByName(player);
+
+        if (!byUniqueId.isPresent()) {
+            return userController.getUserCoins(player);
+        }
+
         return byUniqueId.map(User::getCoins).orElse(0.0);
     }
 }

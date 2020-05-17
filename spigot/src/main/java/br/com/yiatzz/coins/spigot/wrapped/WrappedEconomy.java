@@ -14,9 +14,9 @@ import java.util.List;
 public class WrappedEconomy implements Economy {
 
     private final Provider<CoinsSpigotApplication> provider;
-    private String currencyName;
-    private boolean enabled;
-    private NumberFormat numberFormat = NumberFormat.getInstance();
+    private final String currencyName;
+    private final boolean enabled;
+    private final NumberFormat numberFormat = NumberFormat.getInstance();
 
     @Inject
     public WrappedEconomy(Provider<CoinsSpigotApplication> provider) {
@@ -122,7 +122,6 @@ public class WrappedEconomy implements Economy {
 
     @Override
     public EconomyResponse withdrawPlayer(String playerName, double amount) {
-
         provider.get().handleUserCoinsWithdrawPerfomed(Bukkit.getPlayer(playerName), amount);
         return new EconomyResponse(amount, getBalance(playerName), EconomyResponse.ResponseType.SUCCESS, null);
     }

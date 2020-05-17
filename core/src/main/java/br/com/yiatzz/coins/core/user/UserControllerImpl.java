@@ -28,7 +28,7 @@ public class UserControllerImpl implements UserController {
     private static final String QUERY_DELETE_USER_BY_UUID = "DELETE FROM coinsUsers WHERE `uniqueId` = ?";
     private static final String QUERY_UPDATE_USER_COINS = "UPDATE coinsUsers SET coins = ? WHERE `uniqueId` = ?";
     private static final String QUERY_GET_RANKING = "SELECT `uniqueId`, `name`, `coins` FROM coinsUsers ORDER BY `coins` DESC LIMIT 10";
-    private static final String QUERY_CONVERTER = "SELECT `RealNick`, `Money` FROM JH_Economy";
+    private static final String QUERY_CONVERTER = "SELECT * FROM money";
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final DataSource dataSource;
@@ -241,14 +241,14 @@ public class UserControllerImpl implements UserController {
                 ResultSet resultSet = preparedStatement.executeQuery();
 
                 while (resultSet.next()) {
-                    String name = resultSet.getString("RealNick");
+                    String name = resultSet.getString("name");
+                    double coins = Double.parseDouble(resultSet.getString("coins"));
 
-                    if (users.containsKey(name)) {
+                    if (coins == 0.0) {
                         return;
                     }
 
-                    double coins = resultSet.getDouble("Money");
-                    users.put(name, coins);
+                    users.putIfAbsent(name, coins);
                 }
 
                 resultSet.close();

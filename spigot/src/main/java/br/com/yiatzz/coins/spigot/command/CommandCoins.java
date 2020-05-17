@@ -23,17 +23,22 @@ public class CommandCoins implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            return false;
-        }
-
-        Player player = (Player) sender;
 
         switch (args.length) {
             case 0:
-                provider.get().handleUserInfoPerfomed(player);
+                if (!(sender instanceof Player)) {
+                    break;
+                }
+
+                provider.get().handleUserInfoPerfomed((Player) sender);
                 break;
             case 1:
+                if (!(sender instanceof Player)) {
+                    break;
+                }
+
+                Player player = (Player) sender;
+
                 if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove") || args[0].equalsIgnoreCase("give") || args[0].equalsIgnoreCase("set")) {
                     if (!player.hasPermission("coins.admin")) {
                         player.sendMessage("§cVocê não tem permissão para executar este comando.");
@@ -53,26 +58,31 @@ public class CommandCoins implements CommandExecutor {
                 Player otherPlayer = Bukkit.getPlayer(args[1]);
 
                 if (otherPlayer == null) {
-                    player.sendMessage("§cUsuário inválido.");
+                    sender.sendMessage("§cUsuário inválido.");
                     break;
                 }
 
 
                 OptionalDouble optionalDouble = OptionalNumber.tryParseDouble(args[2]);
                 if (!optionalDouble.isPresent() || args[2].equalsIgnoreCase("nan")) {
-                    player.sendMessage("§cQuantia inválida.");
+                    sender.sendMessage("§cQuantia inválida.");
                     return false;
                 }
 
                 double value = optionalDouble.getAsDouble();
-                boolean hasPermission = player.hasPermission("coins.admin");
+                if (value <= 0.0 || value <= 0) {
+                    sender.sendMessage("§cValor inválido.");
+                    return false;
+                }
+
+                boolean hasPermission = sender.hasPermission("coins.admin");
 
                 switch (args[0].toLowerCase()) {
                     case "give":
                     case "add":
                     case "adicionar":
                         if (!hasPermission) {
-                            player.sendMessage("§cVocê não tem permissão para executar este comando.");
+                            sender.sendMessage("§cVocê não tem permissão para executar este comando.");
                             break;
                         }
 
@@ -81,7 +91,7 @@ public class CommandCoins implements CommandExecutor {
                     case "remove":
                     case "remover":
                         if (!hasPermission) {
-                            player.sendMessage("§cVocê não tem permissão para executar este comando.");
+                            sender.sendMessage("§cVocê não tem permissão para executar este comando.");
                             break;
                         }
 
@@ -91,7 +101,7 @@ public class CommandCoins implements CommandExecutor {
                     case "define":
                     case "definir":
                         if (!hasPermission) {
-                            player.sendMessage("§cVocê não tem permissão para executar este comando.");
+                            sender.sendMessage("§cVocê não tem permissão para executar este comando.");
                             break;
                         }
 
@@ -100,7 +110,11 @@ public class CommandCoins implements CommandExecutor {
                     case "pay":
                     case "enviar":
                     case "pagar":
-                        provider.get().handleUserPaymentPerfomed(player, otherPlayer, value);
+                        if (!(sender instanceof Player)) {
+                            break;
+                        }
+
+                        provider.get().handleUserPaymentPerfomed((Player) sender, otherPlayer, value);
                         break;
                 }
                 break;
