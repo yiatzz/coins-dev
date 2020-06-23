@@ -11,8 +11,6 @@ public interface CoinsSpigotApplication {
 
     void hookVault();
 
-    void convert();
-
     void handleUserInfoPerfomed(Player player);
 
     void handleUserViewingInfoPerfomed(Player player, String target);
@@ -28,8 +26,6 @@ public interface CoinsSpigotApplication {
     void handleUserDefinedCoins(Player player, double newValue);
 
     void handleRankInfoPerfomed(Player player);
-
-    double getUserCoins(Player player);
 
     double getUserCoins(String player);
 

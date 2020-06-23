@@ -1,7 +1,6 @@
 package br.com.yiatzz.coins.core.user;
 
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -25,6 +24,4 @@ public interface UserController {
     void getUsers(Consumer<Set<User>> consumer);
 
     void getRanking(Consumer<LinkedHashSet<User>> consumer);
-
-    void getUsersToConvert(Consumer<Map<String, Double>> consumer);
 }

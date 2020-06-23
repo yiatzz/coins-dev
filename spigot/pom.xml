@@ -34,15 +34,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>22.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ru.tekhnode</groupId>
-            <artifactId>PermissionsEx</artifactId>
-            <version>1.2.4</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/maven/PermissionsEx.jar</systemPath>
+            <version>29.0-jre</version>
         </dependency>
 
         <dependency>
@@ -55,7 +47,7 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>4.1.0</version>
+            <version>4.2.3</version>
             <scope>compile</scope>
         </dependency>
 
@@ -72,7 +64,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -83,16 +75,32 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.4</version>
                 <executions>
                     <execution>
+
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
+
                         <configuration>
+
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>**/*.java</exclude>
+                                        <exclude>**/*.SF</exclude>
+                                        <exclude>**/*.DSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+
+                            <minimizeJar>true</minimizeJar>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
+
                     </execution>
                 </executions>
             </plugin>

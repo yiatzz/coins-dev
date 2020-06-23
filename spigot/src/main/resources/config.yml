@@ -2,5 +2,3 @@ database:
   url: jdbc:mysql://localhost:8889/coins
   user: root
   password:
-
-converter: true

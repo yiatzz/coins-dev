@@ -1,6 +1,5 @@
 package br.com.yiatzz.coins.core.user;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
@@ -10,12 +9,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
 
 public class UserControllerImpl implements UserController {
@@ -28,9 +26,8 @@ public class UserControllerImpl implements UserController {
     private static final String QUERY_DELETE_USER_BY_UUID = "DELETE FROM coinsUsers WHERE `uniqueId` = ?";
     private static final String QUERY_UPDATE_USER_COINS = "UPDATE coinsUsers SET coins = ? WHERE `uniqueId` = ?";
     private static final String QUERY_GET_RANKING = "SELECT `uniqueId`, `name`, `coins` FROM coinsUsers ORDER BY `coins` DESC LIMIT 10";
-    private static final String QUERY_CONVERTER = "SELECT * FROM money";
 
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ExecutorService executorService = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
     private final DataSource dataSource;
 
     @Inject
@@ -229,34 +226,6 @@ public class UserControllerImpl implements UserController {
             }
 
             consumer.accept(ranking);
-        });
-    }
-
-    @Override
-    public void getUsersToConvert(Consumer<Map<String, Double>> consumer) {
-        executorService.submit(() -> {
-            Map<String, Double> users = Maps.newHashMap();
-
-            try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(QUERY_CONVERTER)) {
-                ResultSet resultSet = preparedStatement.executeQuery();
-
-                while (resultSet.next()) {
-                    String name = resultSet.getString("name");
-                    double coins = Double.parseDouble(resultSet.getString("coins"));
-
-                    if (coins == 0.0) {
-                        return;
-                    }
-
-                    users.putIfAbsent(name, coins);
-                }
-
-                resultSet.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-            consumer.accept(users);
         });
     }
 }

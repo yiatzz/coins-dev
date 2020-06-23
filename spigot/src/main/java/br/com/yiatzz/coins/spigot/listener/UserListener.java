@@ -10,7 +10,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class UserListener implements Listener {
 
-    private Provider<CoinsSpigotApplication> applicationProvider;
+    private final Provider<CoinsSpigotApplication> applicationProvider;
 
     @Inject
     public UserListener(Provider<CoinsSpigotApplication> applicationProvider) {

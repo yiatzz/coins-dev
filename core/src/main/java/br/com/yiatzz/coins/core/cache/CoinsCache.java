@@ -1,55 +1,48 @@
 package br.com.yiatzz.coins.core.cache;
 
+import br.com.yiatzz.coins.core.user.SimpleUser;
 import br.com.yiatzz.coins.core.user.User;
 import com.google.inject.Inject;
+import com.googlecode.cqengine.ConcurrentIndexedCollection;
+import com.googlecode.cqengine.IndexedCollection;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+
+import static br.com.yiatzz.coins.core.query.CustomQueryFactory.equalsIgnoreCase;
+import static com.googlecode.cqengine.query.QueryFactory.equal;
+
 
 public class CoinsCache {
 
-    private final Set<User> users;
+    private final IndexedCollection<User> users;
 
     @Inject
     public CoinsCache() {
-        users = ConcurrentHashMap.newKeySet();
+        users = new ConcurrentIndexedCollection<>();
     }
 
-    public Set<User> getUsers() {
+    public IndexedCollection<User> getUsers() {
         return users;
     }
 
-    public Optional<User> getByUniqueId(UUID uuid) {
-        for (User user : users) {
-            if (user.getUUID().equals(uuid)) {
-                return Optional.of(user);
-            }
-        }
-
-        return Optional.empty();
+    public User get(UUID uuid) {
+        return users.retrieve(equal(SimpleUser.USER_ID, uuid)).uniqueResult();
     }
 
-    public Optional<User> getByName(String name) {
-        for (User user : users) {
-            if (user.getName().equalsIgnoreCase(name)) {
-                return Optional.of(user);
-            }
-        }
-
-        return Optional.empty();
+    public Optional<User> find(UUID uuid) {
+        return Optional.ofNullable(users.retrieve(equal(SimpleUser.USER_ID, uuid)).uniqueResult());
     }
 
-    public boolean addElement(User element) {
-        return users.add(element);
+    public Optional<User> find(String name) {
+        return Optional.ofNullable(users.retrieve(equalsIgnoreCase(SimpleUser.USER_NAME, name)).uniqueResult());
     }
 
-    public boolean removeElement(User element) {
-        return users.remove(element);
+    public void insert(User element) {
+        users.add(element);
     }
 
-    public boolean contains(User element) {
-        return users.contains(element);
+    public void remove(User element) {
+        users.remove(element);
     }
 }
