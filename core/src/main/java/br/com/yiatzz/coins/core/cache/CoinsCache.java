@@ -5,6 +5,7 @@ import br.com.yiatzz.coins.core.user.User;
 import com.google.inject.Inject;
 import com.googlecode.cqengine.ConcurrentIndexedCollection;
 import com.googlecode.cqengine.IndexedCollection;
+import com.googlecode.cqengine.resultset.ResultSet;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -27,15 +28,33 @@ public class CoinsCache {
     }
 
     public User get(UUID uuid) {
-        return users.retrieve(equal(SimpleUser.USER_ID, uuid)).uniqueResult();
+        ResultSet<User> retrieve = users.retrieve(equal(SimpleUser.USER_ID, uuid));
+
+        if (retrieve.isEmpty()) {
+            return null;
+        }
+
+        return retrieve.uniqueResult();
     }
 
     public Optional<User> find(UUID uuid) {
-        return Optional.ofNullable(users.retrieve(equal(SimpleUser.USER_ID, uuid)).uniqueResult());
+        ResultSet<User> retrieve = users.retrieve(equal(SimpleUser.USER_ID, uuid));
+
+        if (retrieve.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(retrieve.uniqueResult());
     }
 
     public Optional<User> find(String name) {
-        return Optional.ofNullable(users.retrieve(equalsIgnoreCase(SimpleUser.USER_NAME, name)).uniqueResult());
+        ResultSet<User> retrieve = users.retrieve(equalsIgnoreCase(SimpleUser.USER_NAME, name));
+
+        if (retrieve.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(retrieve.uniqueResult());
     }
 
     public void insert(User element) {
