@@ -105,10 +105,7 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
         userController.updateUserCoins(player.getUniqueId(), value, aBoolean -> {
             if (!aBoolean) {
                 player.sendMessage("§cAlgo de errado aconteceu.");
-                return;
             }
-
-            player.sendMessage("§eAgora você tem §f" + numberFormat.format(value) + "§e coins.");
         });
     }
 
@@ -117,6 +114,9 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
         userController.getUser(offlinePlayer.getUniqueId(), user -> {
             double value = user.getCoins() + newValue;
             userController.updateUserCoins(offlinePlayer.getUniqueId(), value, aBoolean -> {
+                if (!aBoolean) {
+                    System.out.println("Algo de errado aconteceu no pl de coins.");
+                }
             });
         });
     }
@@ -211,10 +211,7 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
         userController.updateUserCoins(player.getUniqueId(), newValue, aBoolean -> {
             if (!aBoolean) {
                 player.sendMessage("§cAlgo de errado aconteceu.");
-                return;
             }
-
-            player.sendMessage("§eSeus coins foram definidos para §f" + numberFormat.format(newValue) + "§e.");
         });
     }
 
@@ -272,7 +269,6 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
     public void handleUserUnload(Player player) {
         Optional<User> byUniqueId = coinsCache.find(player.getUniqueId());
         if (!byUniqueId.isPresent()) {
-            player.sendMessage("§cAlgo de errado aconteceu.");
             return;
         }
 

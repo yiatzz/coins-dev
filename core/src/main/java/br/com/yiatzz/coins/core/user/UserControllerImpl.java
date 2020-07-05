@@ -76,7 +76,9 @@ public class UserControllerImpl implements UserController {
                     return;
                 }
 
-                User user = new SimpleUser(UUID.fromString(resultSet.getString("uniqueId")), name, resultSet.getDouble("coins"));
+                User user = new SimpleUser(UUID.fromString(resultSet.getString("uniqueId")), name,
+                        resultSet.getDouble("coins"));
+
                 resultSet.close();
                 future.complete(user);
             } catch (SQLException e) {

@@ -11,8 +11,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static br.com.yiatzz.coins.core.query.CustomQueryFactory.equalsIgnoreCase;
+import static com.googlecode.cqengine.index.navigable.NavigableIndex.onAttribute;
 import static com.googlecode.cqengine.query.QueryFactory.equal;
-
 
 public class CoinsCache {
 
@@ -21,6 +21,8 @@ public class CoinsCache {
     @Inject
     public CoinsCache() {
         users = new ConcurrentIndexedCollection<>();
+        users.addIndex(onAttribute(SimpleUser.USER_ID));
+        users.addIndex(onAttribute(SimpleUser.USER_NAME));
     }
 
     public IndexedCollection<User> getUsers() {

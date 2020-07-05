@@ -14,7 +14,7 @@ import java.util.OptionalDouble;
 
 public class CommandCoins implements CommandExecutor {
 
-    private Provider<CoinsSpigotApplication> provider;
+    private final Provider<CoinsSpigotApplication> provider;
 
     @Inject
     public CommandCoins(Provider<CoinsSpigotApplication> provider) {
