@@ -1,5 +1,6 @@
 package br.com.yiatzz.coins.spigot;
 
+import br.com.yiatzz.coins.core.user.UserController;
 import br.com.yiatzz.coins.spigot.module.CoinsSpigotModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -8,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class CoinsSpigotPlugin extends JavaPlugin {
 
     private CoinsSpigotApplication coinsSpigotApplication;
+    private UserController userController;
 
     @Override
     public void onDisable() {
@@ -20,6 +22,7 @@ public class CoinsSpigotPlugin extends JavaPlugin {
         Injector injector = Guice.createInjector(new CoinsSpigotModule(this));
         coinsSpigotApplication = injector.getInstance(CoinsSpigotApplication.class);
         coinsSpigotApplication.initialize();
+
     }
 
     public CoinsSpigotApplication getCoinsSpigotApplication() {

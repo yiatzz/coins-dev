@@ -11,6 +11,7 @@ import br.com.yiatzz.coins.spigot.wrapped.WrappedEconomy;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -19,7 +20,6 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.text.NumberFormat;
-import java.util.Optional;
 
 public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
@@ -64,19 +64,24 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public void handleUserInfoPerfomed(Player player) {
-        Optional<User> byUniqueId = coinsCache.find(player.getUniqueId());
-        if (!byUniqueId.isPresent()) {
+        User byUniqueId = coinsCache.getIfPresent(player.getUniqueId());
+        if (byUniqueId == null) {
             player.sendMessage("§cVocê não possui coins.");
             return;
         }
 
-        player.sendMessage("§2Você possui §f" + numberFormat.format(byUniqueId.get().getCoins()) + " §2coins.");
+        player.sendMessage("§2Você possui §f" + numberFormat.format(byUniqueId.getCoins()) + " §2coins.");
     }
 
     @Override
     public void handleUserViewingInfoPerfomed(Player player, String target) {
-        Optional<User> byUniqueId = coinsCache.find(target);
-        if (!byUniqueId.isPresent()) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(target);
+        if (offlinePlayer == null) {
+            return;
+        }
+
+        User byUniqueId = coinsCache.getIfPresent(offlinePlayer.getUniqueId());
+        if (byUniqueId == null) {
             userController.getUser(target, user -> {
                 if (user == null) {
                     player.sendMessage("§cUsuário inválido.");
@@ -88,20 +93,19 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
             return;
         }
 
-        player.sendMessage(target + " §2possui §f" + numberFormat.format(byUniqueId.get().getCoins()) + " §2coins.");
+        player.sendMessage(target + " §2possui §f" + numberFormat.format(byUniqueId.getCoins()) + " §2coins.");
     }
 
     @Override
     public void handleUserDepositPerfomed(Player player, double newValue) {
-        Optional<User> byUniqueId = coinsCache.find(player.getUniqueId());
-        if (!byUniqueId.isPresent()) {
+        User byUniqueId = coinsCache.getIfPresent(player.getUniqueId());
+        if (byUniqueId == null) {
             return;
         }
 
-        User user = byUniqueId.get();
-        double value = user.getCoins() + newValue;
+        double value = byUniqueId.getCoins() + newValue;
 
-        user.define(value);
+        byUniqueId.define(value);
         userController.updateUserCoins(player.getUniqueId(), value, aBoolean -> {
             if (!aBoolean) {
                 player.sendMessage("§cAlgo de errado aconteceu.");
@@ -123,21 +127,19 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public void handleUserCoinsWithdrawPerfomed(Player player, double newValue) {
-        Optional<User> byUniqueId = coinsCache.find(player.getUniqueId());
-        if (!byUniqueId.isPresent()) {
+        User byUniqueId = coinsCache.getIfPresent(player.getUniqueId());
+        if (byUniqueId == null) {
             player.sendMessage("§cAlgo de errado aconteceu.");
             return;
         }
 
-        User user = byUniqueId.get();
+        byUniqueId.withdraw(newValue);
 
-        user.withdraw(newValue);
-
-        if (user.getCoins() < 0) {
-            user.define(0);
+        if (byUniqueId.getCoins() < 0) {
+            byUniqueId.define(0);
         }
 
-        userController.updateUserCoins(player.getUniqueId(), user.getCoins(), aBoolean -> {
+        userController.updateUserCoins(player.getUniqueId(), byUniqueId.getCoins(), aBoolean -> {
             if (!aBoolean) {
                 player.sendMessage("§cAlgo de errado aconteceu.");
             }
@@ -156,30 +158,27 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
             return;
         }
 
-        Optional<User> byUniqueId = coinsCache.find(player.getUniqueId());
-        if (!byUniqueId.isPresent()) {
+        User byUniqueId = coinsCache.getIfPresent(player.getUniqueId());
+        if (byUniqueId == null) {
             player.sendMessage("§cAlgo de errado aconteceu.");
             return;
         }
 
-        User user = byUniqueId.get();
-        if (!user.has(value)) {
+        if (!byUniqueId.has(value)) {
             player.sendMessage("§cVocê não possui essa quantia de coins.");
             return;
         }
 
-        Optional<User> targetByUniqueId = coinsCache.find(target.getUniqueId());
-        if (!targetByUniqueId.isPresent()) {
+        User targetByUniqueId = coinsCache.getIfPresent(target.getUniqueId());
+        if (targetByUniqueId == null) {
             player.sendMessage("§cUsuário inválido.");
             return;
         }
 
-        User targetUser = targetByUniqueId.get();
+        byUniqueId.define(byUniqueId.getCoins() - value);
+        targetByUniqueId.define(targetByUniqueId.getCoins() + value);
 
-        user.define(user.getCoins() - value);
-        targetUser.define(targetUser.getCoins() + value);
-
-        userController.updateUserCoins(player.getUniqueId(), user.getCoins(), aBoolean -> {
+        userController.updateUserCoins(player.getUniqueId(), byUniqueId.getCoins(), aBoolean -> {
             if (!aBoolean) {
                 player.sendMessage("§cAlgo de errado aconteceu.");
                 return;
@@ -188,7 +187,7 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
             player.sendMessage("§eVocê enviou §f" + numberFormat.format(value) + " §ecoins para §f" + target.getName() + "§e.");
         });
 
-        userController.updateUserCoins(target.getUniqueId(), targetUser.getCoins(), aBoolean -> {
+        userController.updateUserCoins(target.getUniqueId(), targetByUniqueId.getCoins(), aBoolean -> {
             if (!aBoolean) {
                 target.sendMessage("§cAlgo de errado aconteceu.");
                 return;
@@ -200,13 +199,13 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public void handleUserDefinedCoins(Player player, double newValue) {
-        Optional<User> byUniqueId = coinsCache.find(player.getUniqueId());
-        if (!byUniqueId.isPresent()) {
+        User byUniqueId = coinsCache.getIfPresent(player.getUniqueId());
+        if (byUniqueId == null) {
             player.sendMessage("§cAlgo de errado aconteceu.");
             return;
         }
 
-        byUniqueId.get().define(newValue);
+        byUniqueId.define(newValue);
 
         userController.updateUserCoins(player.getUniqueId(), newValue, aBoolean -> {
             if (!aBoolean) {
@@ -267,22 +266,22 @@ public class CoinsSpigotApplicationImpl implements CoinsSpigotApplication {
 
     @Override
     public void handleUserUnload(Player player) {
-        Optional<User> byUniqueId = coinsCache.find(player.getUniqueId());
-        if (!byUniqueId.isPresent()) {
-            return;
-        }
+        coinsCache.remove(player.getUniqueId());
+    }
 
-        coinsCache.remove(byUniqueId.get());
+    @Override
+    public UserController getUserController() {
+        return userController;
     }
 
     @Override
     public double getUserCoins(String player) {
-        Optional<User> byUniqueId = coinsCache.find(player);
+        User byUniqueId = coinsCache.find(player);
 
-        if (!byUniqueId.isPresent()) {
+        if (byUniqueId == null) {
             return userController.getUserCoins(player);
         }
 
-        return byUniqueId.map(User::getCoins).orElse(0.0);
+        return byUniqueId.getCoins();
     }
 }

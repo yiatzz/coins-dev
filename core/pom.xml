@@ -33,12 +33,6 @@
             <version>22.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.googlecode.cqengine</groupId>
-            <artifactId>cqengine</artifactId>
-            <version>3.5.0</version>
-        </dependency>
-
     </dependencies>
 
     <build>

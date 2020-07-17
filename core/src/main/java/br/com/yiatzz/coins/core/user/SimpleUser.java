@@ -1,16 +1,8 @@
 package br.com.yiatzz.coins.core.user;
 
-import com.googlecode.cqengine.attribute.Attribute;
-
 import java.util.UUID;
 
-import static com.googlecode.cqengine.query.QueryFactory.attribute;
-
-
 public class SimpleUser implements User {
-
-    public static final Attribute<User, UUID> USER_ID = attribute("userId", User::getUUID);
-    public static final Attribute<User, String> USER_NAME = attribute("userName", User::getName);
 
     private final UUID uniqueId;
     private final String name;

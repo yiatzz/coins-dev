@@ -1,5 +1,6 @@
 package br.com.yiatzz.coins.core.user;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
@@ -8,7 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -210,15 +211,21 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public void getRanking(Consumer<LinkedHashSet<User>> consumer) {
-        executorService.submit(() -> {
-            LinkedHashSet<User> ranking = Sets.newLinkedHashSet();
+    public void getRanking(Consumer<LinkedList<User>> consumer) {
+        LinkedList<User> ranking = Lists.newLinkedList();
 
-            try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(QUERY_GET_RANKING)) {
+        executorService.submit(() -> {
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(QUERY_GET_RANKING)) {
                 ResultSet resultSet = preparedStatement.executeQuery();
 
                 while (resultSet.next()) {
-                    User user = new SimpleUser(UUID.fromString(resultSet.getString("uniqueId")), resultSet.getString("name"), resultSet.getDouble("coins"));
+                    User user = new SimpleUser(
+                            UUID.fromString(resultSet.getString("uniqueId")),
+                            resultSet.getString("name"),
+                            resultSet.getDouble("coins")
+                    );
+
                     ranking.add(user);
                 }
 

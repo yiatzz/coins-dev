@@ -1,5 +1,6 @@
 package br.com.yiatzz.coins.spigot;
 
+import br.com.yiatzz.coins.core.user.UserController;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -36,4 +37,6 @@ public interface CoinsSpigotApplication {
     void handleUserLoadInfos(Player player);
 
     void handleUserUnload(Player player);
+
+    UserController getUserController();
 }

@@ -23,7 +23,6 @@ public class CommandCoins implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
         switch (args.length) {
             case 0:
                 if (!(sender instanceof Player)) {
@@ -61,7 +60,6 @@ public class CommandCoins implements CommandExecutor {
                     sender.sendMessage("§cUsuário inválido.");
                     break;
                 }
-
 
                 OptionalDouble optionalDouble = OptionalNumber.tryParseDouble(args[2]);
                 if (!optionalDouble.isPresent() || args[2].equalsIgnoreCase("nan")) {
