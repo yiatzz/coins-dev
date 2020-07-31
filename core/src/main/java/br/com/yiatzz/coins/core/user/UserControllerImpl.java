@@ -9,9 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
@@ -19,14 +18,13 @@ import java.util.function.Consumer;
 
 public class UserControllerImpl implements UserController {
 
-    private static final String QUERY_GET_USERS = "SELECT `uniqueId`, `name`, `coins` FROM coinsUsers";
+    private static final String QUERY_GET_USERS = "SELECT * FROM coinsUsers";
     private static final String QUERY_GET_COINS = "SELECT `coins` FROM coinsUsers WHERE coinsUsers.`name` = ?";
-    private static final String QUERY_GET_USER_BY_NAME = "SELECT `uniqueId`, `coins` FROM coinsUsers WHERE coinsUsers.`name` = ?";
-    private static final String QUERY_GET_USER_BY_UUID = "SELECT `name`, `coins` FROM coinsUsers WHERE coinsUsers.`uniqueId` = ?";
-    private static final String QUERY_CREATE_USER = "INSERT INTO coinsUsers (`uniqueId`, `name`, `coins`) VALUES (?, ?, ?)";
-    private static final String QUERY_DELETE_USER_BY_UUID = "DELETE FROM coinsUsers WHERE `uniqueId` = ?";
-    private static final String QUERY_UPDATE_USER_COINS = "UPDATE coinsUsers SET coins = ? WHERE `uniqueId` = ?";
-    private static final String QUERY_GET_RANKING = "SELECT `uniqueId`, `name`, `coins` FROM coinsUsers ORDER BY `coins` DESC LIMIT 10";
+    private static final String QUERY_GET_USER_BY_NAME = "SELECT `coins` FROM coinsUsers WHERE coinsUsers.`name` = ?";
+    private static final String QUERY_CREATE_USER = "INSERT INTO coinsUsers (`name`, `coins`) VALUES (?, ?)";
+    private static final String QUERY_DELETE_USER_BY_NAME = "DELETE FROM coinsUsers WHERE `name` = ?";
+    private static final String QUERY_UPDATE_USER_COINS = "UPDATE coinsUsers SET coins = ? WHERE `name` = ?";
+    private static final String QUERY_GET_RANKING = "SELECT `name`, `coins` FROM coinsUsers ORDER BY `coins` DESC LIMIT 10";
 
     private final ExecutorService executorService = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
     private final DataSource dataSource;
@@ -51,7 +49,7 @@ public class UserControllerImpl implements UserController {
                     return;
                 }
 
-                User user = new SimpleUser(UUID.fromString(resultSet.getString("uniqueId")), name, resultSet.getDouble("coins"));
+                User user = new SimpleUser(name, resultSet.getDouble("coins"));
                 resultSet.close();
                 userConsumer.accept(user);
             } catch (SQLException e) {
@@ -77,8 +75,7 @@ public class UserControllerImpl implements UserController {
                     return;
                 }
 
-                User user = new SimpleUser(UUID.fromString(resultSet.getString("uniqueId")), name,
-                        resultSet.getDouble("coins"));
+                User user = new SimpleUser(name, resultSet.getDouble("coins"));
 
                 resultSet.close();
                 future.complete(user);
@@ -119,12 +116,12 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public void createUser(UUID uuid, String name, double coins, Consumer<Boolean> consumer) {
+    public void createUser(String name, double coins, Consumer<Boolean> consumer) {
         executorService.submit(() -> {
-            try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(QUERY_CREATE_USER)) {
-                preparedStatement.setString(1, uuid.toString());
-                preparedStatement.setString(2, name);
-                preparedStatement.setDouble(3, coins);
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(QUERY_CREATE_USER)) {
+                preparedStatement.setString(1, name);
+                preparedStatement.setDouble(2, coins);
 
                 int result = preparedStatement.executeUpdate();
                 consumer.accept(result > 0);
@@ -135,10 +132,11 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public void removeUser(UUID uuid, Consumer<Boolean> result) {
+    public void removeUser(String name, Consumer<Boolean> result) {
         executorService.submit(() -> {
-            try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(QUERY_DELETE_USER_BY_UUID)) {
-                preparedStatement.setString(1, uuid.toString());
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(QUERY_DELETE_USER_BY_NAME)) {
+                preparedStatement.setString(1, name);
 
                 int changedRows = preparedStatement.executeUpdate();
 
@@ -150,35 +148,12 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public void getUser(UUID uuid, Consumer<User> userConsumer) {
+    public void updateUserCoins(String name, double newValue, Consumer<Boolean> consumer) {
         executorService.submit(() -> {
-            try (Connection connection = dataSource.getConnection()) {
-                PreparedStatement preparedStatement = connection.prepareStatement(QUERY_GET_USER_BY_UUID);
-                preparedStatement.setString(1, uuid.toString());
-
-                ResultSet resultSet = preparedStatement.executeQuery();
-
-                if (!resultSet.next()) {
-                    userConsumer.accept(null);
-                    resultSet.close();
-                    return;
-                }
-
-                User user = new SimpleUser(uuid, resultSet.getString("name"), resultSet.getDouble("coins"));
-                resultSet.close();
-                userConsumer.accept(user);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    @Override
-    public void updateUserCoins(UUID uuid, double newValue, Consumer<Boolean> consumer) {
-        executorService.submit(() -> {
-            try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(QUERY_UPDATE_USER_COINS)) {
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(QUERY_UPDATE_USER_COINS)) {
                 preparedStatement.setDouble(1, newValue);
-                preparedStatement.setString(2, uuid.toString());
+                preparedStatement.setString(2, name);
 
                 int rows = preparedStatement.executeUpdate();
                 consumer.accept(rows > 0);
@@ -197,7 +172,7 @@ public class UserControllerImpl implements UserController {
                 ResultSet resultSet = preparedStatement.executeQuery();
 
                 while (resultSet.next()) {
-                    User user = new SimpleUser(UUID.fromString(resultSet.getString("uniqueId")), resultSet.getString("name"), resultSet.getDouble("coins"));
+                    User user = new SimpleUser(resultSet.getString("name"), resultSet.getDouble("coins"));
                     users.add(user);
                 }
 
@@ -211,8 +186,8 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public void getRanking(Consumer<LinkedList<User>> consumer) {
-        LinkedList<User> ranking = Lists.newLinkedList();
+    public void getRanking(Consumer<List<User>> consumer) {
+        List<User> ranking = Lists.newArrayList();
 
         executorService.submit(() -> {
             try (Connection connection = dataSource.getConnection();
@@ -221,7 +196,6 @@ public class UserControllerImpl implements UserController {
 
                 while (resultSet.next()) {
                     User user = new SimpleUser(
-                            UUID.fromString(resultSet.getString("uniqueId")),
                             resultSet.getString("name"),
                             resultSet.getDouble("coins")
                     );

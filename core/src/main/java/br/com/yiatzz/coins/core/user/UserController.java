@@ -1,8 +1,7 @@
 package br.com.yiatzz.coins.core.user;
 
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 public interface UserController {
@@ -13,15 +12,13 @@ public interface UserController {
 
     double getUserCoins(String name);
 
-    void createUser(UUID uuid, String name, double coins, Consumer<Boolean> consumer);
+    void createUser(String name, double coins, Consumer<Boolean> consumer);
 
-    void removeUser(UUID uuid, Consumer<Boolean> result);
+    void removeUser(String name, Consumer<Boolean> result);
 
-    void getUser(UUID uuid, Consumer<User> userConsumer);
-
-    void updateUserCoins(UUID uuid, double newValue, Consumer<Boolean> consumer);
+    void updateUserCoins(String name, double newValue, Consumer<Boolean> consumer);
 
     void getUsers(Consumer<Set<User>> consumer);
 
-    void getRanking(Consumer<LinkedList<User>> consumer);
+    void getRanking(Consumer<List<User>> consumer);
 }

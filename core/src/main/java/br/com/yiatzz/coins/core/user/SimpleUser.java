@@ -1,22 +1,13 @@
 package br.com.yiatzz.coins.core.user;
 
-import java.util.UUID;
-
 public class SimpleUser implements User {
 
-    private final UUID uniqueId;
     private final String name;
     private double balance;
 
-    public SimpleUser(UUID uniqueId, String name, double balance) {
-        this.uniqueId = uniqueId;
+    public SimpleUser(String name, double balance) {
         this.name = name;
         this.balance = balance;
-    }
-
-    @Override
-    public UUID getUUID() {
-        return uniqueId;
     }
 
     @Override

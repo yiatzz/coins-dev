@@ -33,13 +33,10 @@ public class DataSourceProvider implements Provider<DataSource> {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatemente = connection.prepareStatement("create table if not exists coinsUsers (\n" +
                     "  id          int auto_increment primary key, \n" +
-                    "  uniqueId    varchar(36)  not null,\n" +
                     "  name        varchar(16)  not null,\n" +
-                    "  coins       double DEFAULT 0.0," +
+                    "  coins       double not null DEFAULT 0.0," +
                     "  constraint  coinsUsers_uindex\n" +
                     "  unique (id),\n" +
-                    "  constraint coinsUsers_uniqueId_uindex\n" +
-                    "  unique (uniqueId),\n" +
                     "  constraint coinsUsers_name_uindex\n" +
                     "  unique (name)\n" +
                     ") engine = InnoDB;");

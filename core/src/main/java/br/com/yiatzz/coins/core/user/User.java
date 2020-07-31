@@ -1,10 +1,6 @@
 package br.com.yiatzz.coins.core.user;
 
-import java.util.UUID;
-
 public interface User {
-
-    UUID getUUID();
 
     String getName();
 

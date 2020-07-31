@@ -23,6 +23,7 @@ public class CoinsSpigotModule extends AbstractModule {
         FileConfiguration config = coinsSpigotPlugin.getConfig();
         coinsCoreConfig = new CoinsCoreConfig(config.getString("database.url"), config.getString("database.user"),
                 config.getString("database.password"));
+
         coinsCache = new CoinsCache();
     }
 
